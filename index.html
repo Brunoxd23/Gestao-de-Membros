@@ -99,7 +99,20 @@
             <!-- Cadastro de Membro -->
             <section id="cadastrar-membro" class="section">
                 <h2>Cadastrar Novo Membro</h2>
-                <form id="formCadastro" class="form">
+                <button class="btn btn-primary" id="novoMembroBtn">
+                    <i class="fas fa-user-plus"></i> Novo Membro
+                </button>
+                
+                <!-- Modal de Cadastro -->
+                <div id="modalCadastro" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3><i class="fas fa-user-plus"></i> Cadastrar Novo Membro</h3>
+                            <button class="close-modal" data-close="modal">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <form id="formCadastro" class="form">
                     <div class="form-group">
                         <label for="nome">Nome Completo *</label>
                         <input type="text" id="nome" name="nome" required>
@@ -169,10 +182,12 @@
                         <textarea id="observacoes" name="observacoes" rows="3"></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Cadastrar Membro
-                    </button>
-                </form>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Cadastrar Membro
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </section>
 
             <!-- Lista de Membros -->

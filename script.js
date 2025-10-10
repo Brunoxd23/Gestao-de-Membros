@@ -1574,9 +1574,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listeners para botões de membros e aniversários (delegation)
     document.addEventListener('click', (e) => {
+        // Botão Novo Membro
+        if (e.target.closest('#novoMembroBtn')) {
+            abrirModalCadastro();
+            return;
+        }
+        
         // Fechar modal
         if (e.target.closest('[data-close="modal"]')) {
-            document.querySelectorAll('.modal').forEach(modal => modal.remove());
+            const modal = e.target.closest('.modal');
+            if (modal) {
+                modal.classList.remove('show');
+                document.body.classList.remove('modal-open');
+                // Se for modal de edição dinâmico, remove completamente
+                if (modal.id !== 'modalCadastro') {
+                    modal.remove();
+                }
+            }
             return;
         }
 
@@ -1640,3 +1654,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Funções globais mantidas para compatibilidade (não usadas mais)
+
+// Função para abrir modal de cadastro
+function abrirModalCadastro() {
+    const modal = document.getElementById('modalCadastro');
+    if (modal) {
+        modal.classList.add('show');
+        document.body.classList.add('modal-open'); // Previne scroll do body
+    }
+}
+

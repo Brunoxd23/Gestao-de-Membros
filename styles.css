@@ -30,7 +30,7 @@ body {
 .header {
     background: var(--gradient-primary);
     color: white;
-    padding: 2rem 0;
+    padding: 1.5rem 0;
     text-align: center;
     box-shadow: var(--shadow);
     position: relative;
@@ -75,7 +75,7 @@ body {
 
 .navbar {
     background: white;
-    padding: 1rem 0;
+    padding: 0.8rem 0;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     border-bottom: 3px solid var(--gold-color);
 }
@@ -109,7 +109,7 @@ body {
     box-shadow: var(--shadow);
 }
 
-.main { padding: 2rem 0; min-height: calc(100vh - 200px); }
+.main { padding: 1.5rem 0; min-height: calc(100vh - 180px); }
 
 .section {
     display: none;
@@ -123,24 +123,25 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-h2 {
-    color: var(--primary-color);
-    margin-bottom: 2rem;
-    font-size: 2rem;
-    text-align: center;
-    font-weight: 300;
-}
+    h2 {
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        font-size: 2rem;
+        text-align: center;
+        font-weight: 300;
+    }
 
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    margin-bottom: 3rem;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    margin-top: 1rem;
 }
 
 .stat-card {
     background: white;
-    padding: 2rem;
+    padding: 1.5rem;
     border-radius: 15px;
     text-align: center;
     box-shadow: var(--shadow);
@@ -280,6 +281,18 @@ h2 {
 .members-list {
     display: grid;
     gap: 1rem;
+    animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .member-card {
@@ -289,6 +302,25 @@ h2 {
     box-shadow: var(--shadow);
     border-left: 4px solid var(--accent-color);
     transition: all 0.3s ease;
+    animation: fadeInCard 0.5s ease-out;
+    animation-fill-mode: both;
+}
+
+.member-card:nth-child(1) { animation-delay: 0.1s; }
+.member-card:nth-child(2) { animation-delay: 0.2s; }
+.member-card:nth-child(3) { animation-delay: 0.3s; }
+.member-card:nth-child(4) { animation-delay: 0.4s; }
+.member-card:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes fadeInCard {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .member-card:hover {
@@ -505,6 +537,10 @@ h2 {
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
+}
+
+body.modal-open {
+    overflow: hidden;
 }
 
 .modal.show {
