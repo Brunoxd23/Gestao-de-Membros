@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEPPEMBU - Sistema de Gestão de Membros</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="logo.jpg" alt="Logo da Igreja" class="church-logo">
+                </div>
+                <div class="header-text">
+                    <h1><i class="fas fa-cross"></i> CEPPEMBU</h1>
+                    <p>Comunidade Evangélica Príncipe da Paz</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="navbar">
+        <div class="container">
+            <ul class="nav-menu">
+                <li><a href="#" data-section="dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="#" data-section="cadastro"><i class="fas fa-user-plus"></i> Cadastrar Membro</a></li>
+                <li><a href="#" data-section="membros"><i class="fas fa-users"></i> Membros</a></li>
+                <li><a href="#" data-section="relatorios"><i class="fas fa-chart-bar"></i> Relatórios</a></li>
+                <li><a href="#" data-section="aniversarios"><i class="fas fa-birthday-cake"></i> Aniversários</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main">
+        <div class="container">
+            <!-- Dashboard -->
+            <section id="dashboard" class="section active">
+                <h2>Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <h3>Total de Membros</h3>
+                        <span id="totalMembros">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-user-check"></i>
+                        <h3>Membros Ativos</h3>
+                        <span id="membrosAtivos">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-user-clock"></i>
+                        <h3>Visitantes</h3>
+                        <span id="visitantes">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-birthday-cake"></i>
+                        <h3>Aniversários Hoje</h3>
+                        <span id="aniversariosHoje">0</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cadastro de Membro -->
+            <section id="cadastro" class="section">
+                <h2>Cadastrar Novo Membro</h2>
+                <form id="formCadastro" class="form">
+                    <div class="form-group">
+                        <label for="nome">Nome Completo *</label>
+                        <input type="text" id="nome" name="nome" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="telefone">WhatsApp</label>
+                            <input type="tel" id="telefone" name="telefone" placeholder="(11) 99999-9999">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dataNascimento">Data de Nascimento</label>
+                            <input type="date" id="dataNascimento" name="dataNascimento">
+                        </div>
+                        <div class="form-group">
+                            <label for="dataBatismo">Data de Batismo</label>
+                            <input type="date" id="dataBatismo" name="dataBatismo">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="endereco">Endereço</label>
+                            <input type="text" id="endereco" name="endereco">
+                        </div>
+                        <div class="form-group">
+                            <label for="cidade">Cidade</label>
+                            <input type="text" id="cidade" name="cidade">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tipoMembro">Tipo *</label>
+                        <select id="tipoMembro" name="tipoMembro" required>
+                            <option value="">Selecione...</option>
+                            <option value="membro">Membro</option>
+                            <option value="visitante">Visitante</option>
+                            <option value="novo-convertido">Novo Convertido</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ministerio">Ministério</label>
+                        <select id="ministerio" name="ministerio">
+                            <option value="">Selecione...</option>
+                            <option value="pastor">Pastor</option>
+                            <option value="louvor">Louvor</option>
+                            <option value="infantil">Infantil</option>
+                            <option value="jovens">Jovens</option>
+                            <option value="senhores">Senhores</option>
+                            <option value="senhoras">Senhoras</option>
+                            <option value="evangelismo">Evangelismo</option>
+                            <option value="diaconia">Diaconia</option>
+                            <option value="outros">Outros</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="observacoes">Observações</label>
+                        <textarea id="observacoes" name="observacoes" rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Cadastrar Membro
+                    </button>
+                </form>
+            </section>
+
+            <!-- Lista de Membros -->
+            <section id="membros" class="section">
+                <h2>Lista de Membros</h2>
+                <div class="search-bar">
+                    <input type="text" id="searchMembros" placeholder="Buscar por nome, email ou telefone...">
+                    <select id="filterTipo">
+                        <option value="">Todos os tipos</option>
+                        <option value="membro">Membros</option>
+                        <option value="visitante">Visitantes</option>
+                        <option value="novo-convertido">Novos Convertidos</option>
+                    </select>
+                </div>
+                <div id="listaMembros" class="members-list"></div>
+            </section>
+
+            <!-- Relatórios -->
+            <section id="relatorios" class="section">
+                <h2>Relatórios</h2>
+                <div class="reports-grid">
+                    <div class="report-card modern-chart">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-chart-pie"></i> Membros por Tipo</h3>
+                            <div class="chart-stats" id="tipoStats"></div>
+                        </div>
+                        <div id="chartTipoContainer" class="chart-container">
+                            <canvas id="chartTipo"></canvas>
+                            <div id="chartTipoLoading" class="chart-loading">
+                                <div class="loading-spinner"></div>
+                                <p>Carregando gráfico...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="report-card modern-chart">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-chart-bar"></i> Membros por Ministério</h3>
+                            <div class="chart-stats" id="ministerioStats"></div>
+                        </div>
+                        <div id="chartMinisterioContainer" class="chart-container">
+                            <canvas id="chartMinisterio"></canvas>
+                            <div id="chartMinisterioLoading" class="chart-loading">
+                                <div class="loading-spinner"></div>
+                                <p>Carregando gráfico...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="export-buttons">
+                    <button class="btn btn-secondary" id="exportarDadosBtn">
+                        <i class="fas fa-download"></i> Exportar Dados
+                    </button>
+                </div>
+            </section>
+
+            <!-- Aniversários -->
+            <section id="aniversarios" class="section">
+                <h2>Aniversários</h2>
+                <div class="birthday-controls">
+                    <select id="mesAniversario">
+                        <option value="0">Janeiro</option>
+                        <option value="1">Fevereiro</option>
+                        <option value="2">Março</option>
+                        <option value="3">Abril</option>
+                        <option value="4">Maio</option>
+                        <option value="5">Junho</option>
+                        <option value="6">Julho</option>
+                        <option value="7">Agosto</option>
+                        <option value="8">Setembro</option>
+                        <option value="9">Outubro</option>
+                        <option value="10">Novembro</option>
+                        <option value="11">Dezembro</option>
+                    </select>
+                    <button class="btn btn-primary" id="filtrarAniversariosBtn">
+                        <i class="fas fa-search"></i> Filtrar
+                    </button>
+                </div>
+                <div id="listaAniversarios" class="birthday-list"></div>
+                <div class="whatsapp-section">
+                    <h3>Envio em Lote</h3>
+                    <button class="btn btn-success" id="enviarWhatsAppAniversariosBtn">
+                        <i class="fab fa-whatsapp"></i> Enviar Parabéns via WhatsApp
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modais são criados dinamicamente via JavaScript -->
+    
+    <!-- Container para notificações elegantes -->
+    <div id="notificationsContainer" class="notifications-container"></div>
+    
+    <!-- Spinner de carregamento da página -->
+    <div id="pageLoadingOverlay" class="page-loading-overlay">
+        <div class="page-loading-spinner">
+            <img src="logo.jpg" alt="Logo da Igreja" class="page-loading-logo">
+            <div class="page-loading-ring"></div>
+            <div class="page-loading-ring"></div>
+            <div class="page-loading-ring"></div>
+        </div>
+        <div class="page-loading-text">Carregando...</div>
+        <div class="page-loading-subtitle">Atualizando informações</div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
