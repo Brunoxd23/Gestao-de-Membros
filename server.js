@@ -55,6 +55,27 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
 });
 
+// Rotas do frontend - SPA (Single Page Application)
+app.get('/dashboard', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+app.get('/cadastrar-membro', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+app.get('/membros', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+app.get('/relatorios', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+app.get('/aniversarios', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
 // Rota de saúde
 app.get('/api/health', (req, res) => {
   res.json({ 

@@ -1534,22 +1534,26 @@ document.addEventListener('DOMContentLoaded', () => {
     
     console.log('✅ IgrejaManagerAPI inicializado e disponível globalmente');
     
+    // Inicializar o sistema de roteamento
+    window.router = new Router();
+    
     // Verificar se há uma seção salva no localStorage
     const secaoSalva = localStorage.getItem('ceppembu_secao_ativa');
     if (secaoSalva) {
-        showSection(secaoSalva);
+        // O router já vai lidar com a navegação baseada na URL
         localStorage.removeItem('ceppembu_secao_ativa'); // Limpar após usar
-    } else {
-        // Garantir que o Dashboard seja ativo por padrão
-        showSection('dashboard');
     }
     
-    // Adicionar event listeners para navegação
+    // Adicionar event listeners para navegação (usando o router)
     document.querySelectorAll('.nav-menu a').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const sectionId = link.getAttribute('data-section');
-            showSection(sectionId, link);
+            console.log('🖱️ Link clicado:', sectionId, 'Router disponível:', !!window.router);
+            if (sectionId && window.router) {
+                // Usar o router para navegar (isso vai atualizar a URL)
+                window.router.navigateTo(sectionId, link);
+            }
         });
     });
 
