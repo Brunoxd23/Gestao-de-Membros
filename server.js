@@ -44,6 +44,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Servir arquivos estáticos
 app.use(express.static('public'));
+app.use(express.static('.'));
 
 // Rotas da API
 app.use('/api/membros', membrosRoutes);
@@ -52,28 +53,28 @@ app.use('/api/relatorios', relatoriosRoutes);
 
 // Rota principal
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+  res.sendFile(__dirname + '/index.html');
 });
 
 // Rotas do frontend - SPA (Single Page Application)
 app.get('/dashboard', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+  res.sendFile(__dirname + '/index.html');
 });
 
 app.get('/cadastrar-membro', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+  res.sendFile(__dirname + '/index.html');
 });
 
 app.get('/membros', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+  res.sendFile(__dirname + '/index.html');
 });
 
 app.get('/relatorios', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+  res.sendFile(__dirname + '/index.html');
 });
 
 app.get('/aniversarios', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+  res.sendFile(__dirname + '/index.html');
 });
 
 // Rota de saúde
