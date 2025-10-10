@@ -20,6 +20,10 @@
     {
       "src": "logo.jpg",
       "use": "@vercel/static"
+    },
+    {
+      "src": "favicon.ico",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -38,6 +42,10 @@
     {
       "src": "/logo.jpg",
       "dest": "/logo.jpg"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/favicon.ico"
     },
     {
       "src": "/api/(.*)",
