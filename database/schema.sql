@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS membros (
     endereco TEXT,
     cidade VARCHAR(100),
     tipo_membro VARCHAR(50) NOT NULL CHECK (tipo_membro IN ('membro', 'visitante', 'novo-convertido')),
-    ministerio VARCHAR(50) CHECK (ministerio IN ('pastor', 'louvor', 'infantil', 'jovens', 'senhores', 'senhoras', 'evangelismo', 'diaconia', 'outros')),
+    ministerio VARCHAR(50) CHECK (ministerio IN ('Pastor', 'louvor', 'infantil', 'jovens', 'senhores', 'senhoras', 'evangelismo', 'diaconia', 'outros')),
     observacoes TEXT,
     ativo BOOLEAN DEFAULT true,
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
