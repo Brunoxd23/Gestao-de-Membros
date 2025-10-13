@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS membros (
     endereco TEXT,
     cidade VARCHAR(100),
     tipo_membro VARCHAR(50) NOT NULL CHECK (tipo_membro IN ('membro', 'visitante', 'novo-convertido')),
-    ministerio VARCHAR(50) CHECK (ministerio IN ('Pastor', 'louvor', 'infantil', 'jovens', 'senhores', 'senhoras', 'evangelismo', 'diaconia', 'outros')),
+    ministerio VARCHAR(50) CHECK (ministerio IN ('Pastor', 'secretaria', 'louvor', 'infantil', 'jovens', 'senhores', 'senhoras', 'evangelismo', 'diaconia', 'outros')),
     observacoes TEXT,
     ativo BOOLEAN DEFAULT true,
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -41,13 +41,28 @@ CREATE TRIGGER update_membros_updated_at
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
 
--- Tabela para logs de atividades (opcional)
+-- Tabela de usuários para sistema de autenticação
+CREATE TABLE IF NOT EXISTS usuarios (
+    id SERIAL PRIMARY KEY,
+    membro_id INTEGER REFERENCES membros(id) ON DELETE CASCADE,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'secretaria', 'user')),
+    ativo BOOLEAN DEFAULT true,
+    ultimo_login TIMESTAMP,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela para logs de atividades
 CREATE TABLE IF NOT EXISTS logs_atividade (
     id SERIAL PRIMARY KEY,
     membro_id INTEGER REFERENCES membros(id) ON DELETE CASCADE,
+    usuario_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
     acao VARCHAR(100) NOT NULL,
     detalhes JSONB,
-    usuario VARCHAR(100),
+    ip_address INET,
+    user_agent TEXT,
     data_acao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -55,8 +70,17 @@ CREATE TABLE IF NOT EXISTS logs_atividade (
 INSERT INTO membros (nome, email, telefone, data_nascimento, tipo_membro, ministerio, endereco, cidade) VALUES
 ('João Silva', 'joao@email.com', '(11) 99999-9999', '1985-05-15', 'membro', 'louvor', 'Rua das Flores, 123', 'São Paulo'),
 ('Maria Santos', 'maria@email.com', '(11) 88888-8888', '1990-08-22', 'membro', 'infantil', 'Av. Principal, 456', 'São Paulo'),
-('Pedro Costa', 'pedro@email.com', '(11) 77777-7777', '1988-12-10', 'visitante', NULL, 'Rua Central, 789', 'São Paulo')
+('Pedro Costa', 'pedro@email.com', '(11) 77777-7777', '1988-12-10', 'visitante', NULL, 'Rua Central, 789', 'São Paulo'),
+('Pastor Principal', 'pastor@ceppembu.com', '(11) 99999-0001', '1975-03-15', 'membro', 'Pastor', 'Rua da Igreja, 1', 'São Paulo'),
+('Secretária Principal', 'secretaria@ceppembu.com', '(11) 99999-0002', '1980-07-20', 'membro', 'secretaria', 'Rua da Igreja, 2', 'São Paulo')
 ON CONFLICT DO NOTHING;
+
+-- Inserir usuários admin (senha padrão: admin123)
+-- IMPORTANTE: Trocar essas senhas após o primeiro login!
+INSERT INTO usuarios (membro_id, username, password_hash, role) VALUES
+((SELECT id FROM membros WHERE email = 'pastor@ceppembu.com'), 'pastor', '$2b$10$rQZ8KjHv9XKjHv9XKjHv9OuKjHv9XKjHv9XKjHv9XKjHv9XKjHv9XK', 'admin'),
+((SELECT id FROM membros WHERE email = 'secretaria@ceppembu.com'), 'secretaria', '$2b$10$rQZ8KjHv9XKjHv9XKjHv9OuKjHv9XKjHv9XKjHv9XKjHv9XKjHv9XK', 'admin')
+ON CONFLICT (username) DO NOTHING;
 
 -- Comentários para documentação
 COMMENT ON TABLE membros IS 'Tabela principal para armazenar dados dos membros da igreja';

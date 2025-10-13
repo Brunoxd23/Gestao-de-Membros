@@ -9,10 +9,14 @@
       "src": "styles.css",
       "use": "@vercel/static"
     },
-    {
-      "src": "script.js",
-      "use": "@vercel/static"
-    },
+            {
+                "src": "script.js",
+                "use": "@vercel/static"
+            },
+            {
+                "src": "auth.js",
+                "use": "@vercel/static"
+            },
     {
       "src": "router.js",
       "use": "@vercel/static"
@@ -31,10 +35,14 @@
       "src": "/styles.css",
       "dest": "/styles.css"
     },
-    {
-      "src": "/script.js",
-      "dest": "/script.js"
-    },
+            {
+                "src": "/script.js",
+                "dest": "/script.js"
+            },
+            {
+                "src": "/auth.js",
+                "dest": "/auth.js"
+            },
     {
       "src": "/router.js",
       "dest": "/router.js"

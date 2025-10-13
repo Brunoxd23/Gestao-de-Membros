@@ -1664,3 +1664,49 @@ function abrirModalCadastro() {
     }
 }
 
+// Event listeners para autenticação
+function setupAuthEventListeners() {
+    // Login form
+    const formLogin = document.getElementById('formLogin');
+    if (formLogin) {
+        formLogin.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (window.auth) {
+                await window.auth.login(username, password);
+            }
+        });
+    }
+    
+    // Logout button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            if (window.auth) {
+                window.auth.logout();
+            }
+        });
+    }
+    
+    // Gerenciar usuários button
+    const gerenciarUsuariosBtn = document.getElementById('gerenciarUsuariosBtn');
+    if (gerenciarUsuariosBtn) {
+        gerenciarUsuariosBtn.addEventListener('click', () => {
+            if (window.userManager) {
+                window.userManager.renderUserManagement();
+            }
+        });
+    }
+}
+
+// Inicializar event listeners de autenticação quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', () => {
+    // Aguardar um pouco para garantir que auth.js foi carregado
+    setTimeout(() => {
+        setupAuthEventListeners();
+    }, 100);
+});
+

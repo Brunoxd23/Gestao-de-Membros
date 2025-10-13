@@ -7,20 +7,29 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "build": "echo 'Build completed'",
-    "setup-db": "node scripts/setup-database.js"
+    "setup-db": "node scripts/setup-database.js",
+    "update-auth": "node scripts/update-auth-schema.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
-    "pg": "^8.11.3",
     "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "express-session": "^1.18.2",
     "helmet": "^7.1.0",
-    "express-rate-limit": "^7.1.5"
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
   },
-  "keywords": ["igreja", "membros", "gestão", "ceppembu"],
+  "keywords": [
+    "igreja",
+    "membros",
+    "gestão",
+    "ceppembu"
+  ],
   "author": "CEPPEMBU",
   "license": "MIT"
 }

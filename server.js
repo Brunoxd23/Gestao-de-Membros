@@ -7,6 +7,7 @@ require('dotenv').config();
 const membrosRoutes = require('./routes/membros');
 const aniversariosRoutes = require('./routes/aniversarios');
 const relatoriosRoutes = require('./routes/relatorios');
+const { router: authRoutes } = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -47,6 +48,7 @@ app.use(express.static('public'));
 app.use(express.static('.'));
 
 // Rotas da API
+app.use('/api/auth', authRoutes);
 app.use('/api/membros', membrosRoutes);
 app.use('/api/aniversarios', aniversariosRoutes);
 app.use('/api/relatorios', relatoriosRoutes);
