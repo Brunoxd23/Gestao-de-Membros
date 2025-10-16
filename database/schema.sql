@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     membro_id INTEGER REFERENCES membros(id) ON DELETE CASCADE,
     username VARCHAR(50) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'secretaria', 'user')),
+    role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'secretaria', 'membro')),
     ativo BOOLEAN DEFAULT true,
     ultimo_login TIMESTAMP,
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

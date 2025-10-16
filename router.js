@@ -6,7 +6,8 @@ class Router {
             'cadastrar-membro': 'cadastrar-membro',
             'membros': 'membros',
             'relatorios': 'relatorios',
-            'aniversarios': 'aniversarios'
+            'aniversarios': 'aniversarios',
+            'usuarios': 'usuarios'
         };
         this.init();
     }
@@ -56,6 +57,12 @@ class Router {
             section.classList.remove('active');
         });
         
+        // Esconder seção de usuários se não for a seção ativa
+        const usuariosSection = document.getElementById('usuarios');
+        if (usuariosSection && sectionId !== 'usuarios') {
+            usuariosSection.style.display = 'none';
+        }
+        
         // Mostrar seção selecionada
         const targetSection = document.getElementById(sectionId);
         if (targetSection) {
@@ -95,9 +102,29 @@ class Router {
             if (window.igreja) {
                 window.igreja.carregarMembros();
             }
+            
+            // Aplicar permissões para membros após carregar
+            setTimeout(() => {
+                const currentUser = window.auth?.currentUser;
+                if (currentUser && currentUser.role === 'membro') {
+                    document.querySelectorAll('.member-card .member-actions').forEach(actions => {
+                        actions.style.display = 'none';
+                    });
+                }
+            }, 500);
         } else if (sectionId === 'aniversarios') {
             if (window.igreja) {
                 window.igreja.carregarAniversarios();
+            }
+        } else if (sectionId === 'usuarios') {
+            // Mostrar a seção de usuários
+            const usuariosSection = document.getElementById('usuarios');
+            if (usuariosSection) {
+                usuariosSection.style.display = 'block';
+            }
+            
+            if (window.carregarUsuarios) {
+                window.carregarUsuarios();
             }
         } else if (sectionId === 'dashboard') {
             if (window.igreja) {

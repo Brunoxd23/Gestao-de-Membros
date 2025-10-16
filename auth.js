@@ -102,6 +102,12 @@ class AuthManager {
             this.currentUser = null;
             localStorage.removeItem('ceppembu_token');
             
+            // Limpar campos de login
+            const usernameField = document.getElementById('username');
+            const passwordField = document.getElementById('password');
+            if (usernameField) usernameField.value = '';
+            if (passwordField) passwordField.value = '';
+            
             // Mostrar login
             this.showLogin();
             this.hideUserBar();
@@ -136,32 +142,52 @@ class AuthManager {
         if (mainHeader) mainHeader.style.display = 'block';
         if (mainNavbar) mainNavbar.style.display = 'block';
         if (mainContent) mainContent.style.display = 'block';
+        
+        // Configurar permissões baseadas no role do usuário
+        if (this.currentUser && window.configurarPermissoes) {
+            window.configurarPermissoes(this.currentUser.role);
+        }
+        
+        // Atualizar navegação após configurar permissões
+        this.updateNavigation();
     }
 
     showUserBar() {
-        const userBar = document.getElementById('userBar');
-        const userName = userBar.querySelector('.user-name');
-        const userRole = userBar.querySelector('.user-role');
-        const gerenciarBtn = document.getElementById('gerenciarUsuariosBtn');
+        const headerUserInfo = document.getElementById('headerUserInfo');
+        const userNameHeader = document.querySelector('.user-name-header');
+        const userRoleHeader = document.querySelector('.user-role-header');
+        const logoutBtnHeader = document.getElementById('logoutBtnHeader');
 
-        if (userBar && this.currentUser) {
-            userName.textContent = this.currentUser.nome;
-            userRole.textContent = this.currentUser.role === 'admin' ? 'Administrador' : 
-                                   this.currentUser.role === 'secretaria' ? 'Secretaria' : 'Usuário';
-            
-            // Mostrar botão de gerenciar usuários apenas para admins
-            if (gerenciarBtn) {
-                gerenciarBtn.style.display = this.currentUser.role === 'admin' ? 'inline-flex' : 'none';
+        if (headerUserInfo && this.currentUser) {
+            if (userNameHeader) {
+                userNameHeader.textContent = this.currentUser.nome;
+            }
+            if (userRoleHeader) {
+                userRoleHeader.textContent = this.currentUser.role === 'admin' ? 'Administrador' : 
+                                           this.currentUser.role === 'secretaria' ? 'Secretaria' : 'Membro';
             }
             
-            userBar.style.display = 'flex';
+            headerUserInfo.style.display = 'flex';
+        }
+    }
+
+    // Método para renderizar gerenciamento de usuários
+    renderUserManagement() {
+        // Navegar para a seção de usuários
+        if (window.router) {
+            window.router.navigateTo('usuarios');
+        }
+        
+        // Carregar lista de usuários
+        if (window.carregarUsuarios) {
+            window.carregarUsuarios();
         }
     }
 
     hideUserBar() {
-        const userBar = document.getElementById('userBar');
-        if (userBar) {
-            userBar.style.display = 'none';
+        const headerUserInfo = document.getElementById('headerUserInfo');
+        if (headerUserInfo) {
+            headerUserInfo.style.display = 'none';
         }
     }
 
@@ -184,8 +210,8 @@ class AuthManager {
                     // Secretaria vê tudo exceto gerenciamento de usuários
                     link.style.display = 'flex';
                 } else {
-                    // Usuário comum vê apenas dashboard e aniversários
-                    const allowedSections = ['aniversarios'];
+                    // Usuário comum (membro) vê dashboard, membros, relatórios e aniversários
+                    const allowedSections = ['membros', 'relatorios', 'aniversarios'];
                     link.style.display = allowedSections.includes(section) ? 'flex' : 'none';
                 }
             } else {

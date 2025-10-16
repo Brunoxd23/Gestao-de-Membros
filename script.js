@@ -1681,10 +1681,10 @@ function setupAuthEventListeners() {
         });
     }
     
-    // Logout button
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
+    // Logout button (header)
+    const logoutBtnHeader = document.getElementById('logoutBtnHeader');
+    if (logoutBtnHeader) {
+        logoutBtnHeader.addEventListener('click', () => {
             if (window.auth) {
                 window.auth.logout();
             }
@@ -1695,10 +1695,467 @@ function setupAuthEventListeners() {
     const gerenciarUsuariosBtn = document.getElementById('gerenciarUsuariosBtn');
     if (gerenciarUsuariosBtn) {
         gerenciarUsuariosBtn.addEventListener('click', () => {
-            if (window.userManager) {
-                window.userManager.renderUserManagement();
+            if (window.auth) {
+                window.auth.renderUserManagement();
             }
         });
+    }
+    
+    // Formulário de cadastro de usuário
+    const formCadastroUsuario = document.getElementById('formCadastroUsuario');
+    if (formCadastroUsuario) {
+        formCadastroUsuario.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await cadastrarUsuario();
+        });
+    }
+    
+    // Novo usuário button (na seção de usuários)
+    const btnNovoUsuario = document.getElementById('btnNovoUsuario');
+    if (btnNovoUsuario) {
+        btnNovoUsuario.addEventListener('click', () => {
+            abrirModalCadastroUsuario();
+        });
+    }
+    
+    // Formulário de edição de usuário
+    const formEditarUsuario = document.getElementById('formEditarUsuario');
+    if (formEditarUsuario) {
+        formEditarUsuario.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await editarUsuario();
+        });
+    }
+}
+
+// Função para abrir modal de cadastro de usuário
+function abrirModalCadastroUsuario() {
+    const modal = document.getElementById('modalCadastroUsuario');
+    if (modal) {
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+        carregarMembrosParaCadastro();
+    }
+}
+
+// Função para carregar membros para o select de cadastro
+async function carregarMembrosParaCadastro() {
+    try {
+        const response = await fetch('/api/membros');
+        const data = await response.json();
+        
+        if (data.success) {
+            const select = document.getElementById('cadastroMembroSelect');
+            select.innerHTML = '<option value="">Selecione um membro...</option>';
+            
+            data.data.forEach(membro => {
+                const option = document.createElement('option');
+                option.value = membro.id;
+                option.textContent = `${membro.nome} - ${membro.email || 'Sem email'}`;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar membros:', error);
+        mostrarNotificacao('Erro ao carregar membros para cadastro', 'error');
+    }
+}
+
+// Função para cadastrar usuário
+async function cadastrarUsuario() {
+    const form = document.getElementById('formCadastroUsuario');
+    const formData = new FormData(form);
+    
+    const dados = {
+        membro_id: formData.get('membro_id'),
+        username: formData.get('username'),
+        password: formData.get('password'),
+        role: formData.get('role')
+    };
+    
+    // Validações
+    if (!dados.membro_id || !dados.username || !dados.password || !dados.role) {
+        mostrarNotificacao('Todos os campos são obrigatórios', 'error');
+        return;
+    }
+    
+    if (dados.password.length < 6) {
+        mostrarNotificacao('A senha deve ter pelo menos 6 caracteres', 'error');
+        return;
+    }
+    
+    try {
+        const token = localStorage.getItem('ceppembu_token');
+        const response = await fetch('/api/auth/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(dados)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Fechar modal primeiro
+            fecharModalCadastroUsuario();
+            
+            // Mostrar notificação de sucesso
+            mostrarNotificacao('Usuário cadastrado com sucesso!', 'success');
+            
+            // Recarregar página após 2 segundos para mostrar a lista atualizada
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            mostrarNotificacao(result.error || 'Erro ao cadastrar usuário', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao cadastrar usuário:', error);
+        mostrarNotificacao('Erro ao cadastrar usuário', 'error');
+    }
+}
+
+// Função para fechar modal de cadastro de usuário
+function fecharModalCadastroUsuario() {
+    const modal = document.getElementById('modalCadastroUsuario');
+    if (modal) {
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+    }
+}
+
+// Função para carregar lista de usuários (global)
+window.carregarUsuarios = async function carregarUsuarios() {
+    try {
+        const token = localStorage.getItem('ceppembu_token');
+        const response = await fetch('/api/auth/users', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            renderizarUsuarios(result.data);
+            atualizarStatsUsuarios(result.data);
+        } else {
+            mostrarNotificacao(result.error || 'Erro ao carregar usuários', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar usuários:', error);
+        mostrarNotificacao('Erro ao carregar usuários', 'error');
+    }
+}
+
+// Função para renderizar lista de usuários
+function renderizarUsuarios(usuarios) {
+    const container = document.getElementById('listaUsuarios');
+    
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    usuarios.forEach(usuario => {
+        const userCard = document.createElement('div');
+        userCard.className = 'user-card';
+        
+        const ultimoLogin = usuario.ultimo_login ? 
+            new Date(usuario.ultimo_login).toLocaleDateString('pt-BR') : 
+            'Nunca';
+        
+        const statusClass = usuario.ativo ? 'ativo' : 'inativo';
+        const statusText = usuario.ativo ? 'Ativo' : 'Inativo';
+        
+        userCard.innerHTML = `
+            <div class="user-card-header">
+                <div class="user-info">
+                    <h4>${usuario.nome || 'Nome não informado'}</h4>
+                    <p>@${usuario.username}</p>
+                </div>
+                <span class="user-role-badge ${usuario.role}">${usuario.role}</span>
+            </div>
+            
+            <div class="user-details">
+                <div class="user-detail">
+                    <i class="fas fa-envelope"></i>
+                    <span>${usuario.email || 'Email não informado'}</span>
+                </div>
+                <div class="user-detail">
+                    <i class="fas fa-briefcase"></i>
+                    <span>${usuario.ministerio || 'Ministério não informado'}</span>
+                </div>
+                <div class="user-detail">
+                    <i class="fas fa-clock"></i>
+                    <span>Último login: ${ultimoLogin}</span>
+                </div>
+                <div class="user-detail">
+                    <i class="fas fa-circle ${statusClass}"></i>
+                    <span>${statusText}</span>
+                </div>
+            </div>
+            
+            <div class="user-actions">
+                <button class="btn-user-action edit" onclick="abrirModalEditarUsuario(${usuario.id})">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+                <button class="btn-user-action delete" onclick="deletarUsuario(${usuario.id})">
+                    <i class="fas fa-trash"></i> Excluir
+                </button>
+            </div>
+        `;
+        
+        container.appendChild(userCard);
+    });
+}
+
+// Função para atualizar estatísticas de usuários
+function atualizarStatsUsuarios(usuarios) {
+    const totalUsuarios = document.getElementById('totalUsuarios');
+    const usuariosAtivos = document.getElementById('usuariosAtivos');
+    
+    if (totalUsuarios) {
+        totalUsuarios.textContent = usuarios.length;
+    }
+    
+    if (usuariosAtivos) {
+        const ativos = usuarios.filter(u => u.ativo).length;
+        usuariosAtivos.textContent = ativos;
+    }
+}
+
+// Função para abrir modal de edição de usuário
+async function abrirModalEditarUsuario(id) {
+    try {
+        // Buscar dados do usuário
+        const token = localStorage.getItem('ceppembu_token');
+        const response = await fetch(`/api/auth/users/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            const usuario = result.data;
+            
+            // Preencher formulário
+            document.getElementById('editarUsuarioId').value = usuario.id;
+            document.getElementById('editarUsername').value = usuario.username;
+            document.getElementById('editarRole').value = usuario.role;
+            document.getElementById('editarAtivo').value = usuario.ativo.toString();
+            
+            // Carregar membros para o select
+            await carregarMembrosParaEdicao();
+            document.getElementById('editarMembroSelect').value = usuario.membro_id;
+            
+            // Mostrar modal
+            const modal = document.getElementById('modalEditarUsuario');
+            modal.classList.add('show');
+            document.body.classList.add('modal-open');
+        } else {
+            mostrarNotificacao(result.error || 'Erro ao carregar dados do usuário', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao carregar usuário:', error);
+        mostrarNotificacao('Erro ao carregar usuário', 'error');
+    }
+}
+
+// Função para carregar membros para edição
+async function carregarMembrosParaEdicao() {
+    try {
+        const response = await fetch('/api/membros');
+        const data = await response.json();
+        
+        if (data.success) {
+            const select = document.getElementById('editarMembroSelect');
+            select.innerHTML = '<option value="">Selecione um membro...</option>';
+            
+            data.data.forEach(membro => {
+                const option = document.createElement('option');
+                option.value = membro.id;
+                option.textContent = `${membro.nome} - ${membro.email || 'Sem email'}`;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar membros:', error);
+        mostrarNotificacao('Erro ao carregar membros para edição', 'error');
+    }
+}
+
+// Função para editar usuário
+async function editarUsuario() {
+    const form = document.getElementById('formEditarUsuario');
+    const formData = new FormData(form);
+    
+    const dados = {
+        id: formData.get('id'),
+        membro_id: formData.get('membro_id'),
+        username: formData.get('username'),
+        password: formData.get('password'),
+        role: formData.get('role'),
+        ativo: formData.get('ativo') === 'true'
+    };
+    
+    // Validações
+    if (!dados.membro_id || !dados.username || !dados.role) {
+        mostrarNotificacao('Todos os campos obrigatórios devem ser preenchidos', 'error');
+        return;
+    }
+    
+    if (dados.password && dados.password.length < 6) {
+        mostrarNotificacao('A senha deve ter pelo menos 6 caracteres', 'error');
+        return;
+    }
+    
+    try {
+        const token = localStorage.getItem('ceppembu_token');
+        const response = await fetch(`/api/auth/users/${dados.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(dados)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            mostrarNotificacao('Usuário atualizado com sucesso!', 'success');
+            form.reset();
+            fecharModalEditarUsuario();
+            carregarUsuarios();
+        } else {
+            mostrarNotificacao(result.error || 'Erro ao atualizar usuário', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao editar usuário:', error);
+        mostrarNotificacao('Erro ao editar usuário', 'error');
+    }
+}
+
+// Função para fechar modal de edição de usuário
+function fecharModalEditarUsuario() {
+    const modal = document.getElementById('modalEditarUsuario');
+    if (modal) {
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+    }
+}
+
+// Função para deletar usuário
+async function deletarUsuario(id) {
+    if (!confirm('Tem certeza que deseja excluir este usuário?')) {
+        return;
+    }
+    
+    try {
+        const token = localStorage.getItem('ceppembu_token');
+        const response = await fetch(`/api/auth/users/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            mostrarNotificacao('Usuário excluído com sucesso!', 'success');
+            carregarUsuarios();
+        } else {
+            mostrarNotificacao(result.error || 'Erro ao excluir usuário', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao deletar usuário:', error);
+        mostrarNotificacao('Erro ao deletar usuário', 'error');
+    }
+}
+
+// Função para configurar permissões baseadas no role (global)
+window.configurarPermissoes = function configurarPermissoes(role) {
+    const navMenu = document.querySelector('.nav-menu');
+    const gerenciarUsuariosBtn = document.getElementById('gerenciarUsuariosBtn');
+    const btnNovoMembro = document.getElementById('novoMembroBtn');
+    const btnNovoUsuario = document.getElementById('btnNovoUsuario');
+    
+    // Mostrar/ocultar botão de gerenciar usuários
+    if (gerenciarUsuariosBtn) {
+        gerenciarUsuariosBtn.style.display = (role === 'admin') ? 'inline-block' : 'none';
+    }
+    
+    // Mostrar/ocultar botão de novo usuário (apenas admin pode cadastrar usuários)
+    if (btnNovoUsuario) {
+        btnNovoUsuario.style.display = (role === 'admin') ? 'inline-block' : 'none';
+    }
+    
+    // Mostrar/ocultar link de usuários na navegação (apenas admin)
+    const navUsuarios = document.getElementById('navUsuarios');
+    if (navUsuarios) {
+        navUsuarios.style.display = (role === 'admin') ? 'inline-block' : 'none';
+    }
+    
+    // Configurar permissões de navegação
+    if (navMenu) {
+        const menuItems = navMenu.querySelectorAll('a[data-section]');
+        
+        menuItems.forEach(item => {
+            const section = item.getAttribute('data-section');
+            
+            // Role 'membro' só pode visualizar, não pode cadastrar/editar
+            if (role === 'membro') {
+                if (section === 'cadastrar-membro') {
+                    item.style.display = 'none';
+                }
+                // Garantir que outras rotas estejam visíveis para membros
+                else if (section === 'membros' || section === 'dashboard' || section === 'relatorios' || section === 'aniversarios') {
+                    item.style.display = 'flex';
+                }
+            }
+        });
+    }
+    
+    // Configurar permissões de botões de ação
+    if (btnNovoMembro) {
+        btnNovoMembro.style.display = (role === 'membro') ? 'none' : 'inline-block';
+    }
+    
+    // Desabilitar botões de ação para membros
+    if (role === 'membro') {
+        // Remover botões de edição/exclusão dos cards de membros
+        setTimeout(() => {
+            document.querySelectorAll('.member-card .member-actions').forEach(actions => {
+                actions.style.display = 'none';
+            });
+            
+            // Remover botões de ação dos cards de usuários (membros não podem gerenciar usuários)
+            document.querySelectorAll('.user-card .user-actions').forEach(actions => {
+                actions.style.display = 'none';
+            });
+            
+            // Ocultar botão "Novo Membro"
+            const btnNovoMembro = document.getElementById('novoMembroBtn');
+            if (btnNovoMembro) {
+                btnNovoMembro.style.display = 'none';
+            }
+        }, 100);
+    } else {
+        // Para admin/secretaria - garantir que botões de ação estejam visíveis
+        setTimeout(() => {
+            document.querySelectorAll('.member-card .member-actions').forEach(actions => {
+                actions.style.display = 'flex';
+            });
+            
+            document.querySelectorAll('.user-card .user-actions').forEach(actions => {
+                actions.style.display = 'flex';
+            });
+        }, 100);
     }
 }
 

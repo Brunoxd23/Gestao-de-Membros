@@ -8,6 +8,7 @@ const membrosRoutes = require('./routes/membros');
 const aniversariosRoutes = require('./routes/aniversarios');
 const relatoriosRoutes = require('./routes/relatorios');
 const { router: authRoutes } = require('./routes/auth');
+const { query } = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -79,6 +80,10 @@ app.get('/aniversarios', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/usuarios', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
+
 // Rota de saúde
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -87,6 +92,7 @@ app.get('/api/health', (req, res) => {
     version: '1.0.0'
   });
 });
+
 
 // Middleware de erro
 app.use((err, req, res, next) => {

@@ -30,6 +30,17 @@ const authenticateToken = (req, res, next) => {
 
 // Middleware para verificar se é admin
 const requireAdmin = (req, res, next) => {
+    if (req.user.role !== 'admin' && req.user.role !== 'secretaria') {
+        return res.status(403).json({
+            success: false,
+            error: 'Acesso negado. Privilégios de administrador requeridos.'
+        });
+    }
+    next();
+};
+
+// Middleware para verificar se é admin (apenas admin, não secretaria)
+const requireAdminOnly = (req, res, next) => {
     if (req.user.role !== 'admin') {
         return res.status(403).json({
             success: false,
@@ -172,7 +183,7 @@ router.get('/me', authenticateToken, async (req, res) => {
 });
 
 // GET /api/auth/users - Listar usuários (apenas admin)
-router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/users', authenticateToken, requireAdminOnly, async (req, res) => {
     try {
         const result = await query(`
             SELECT u.id, u.username, u.role, u.ativo, u.ultimo_login, u.data_criacao,
@@ -197,8 +208,42 @@ router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
     }
 });
 
+// GET /api/auth/users/:id - Buscar usuário específico (apenas admin)
+router.get('/users/:id', authenticateToken, requireAdminOnly, async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const result = await query(`
+            SELECT u.id, u.membro_id, u.username, u.role, u.ativo, u.ultimo_login, u.data_criacao,
+                   m.nome, m.email, m.ministerio
+            FROM usuarios u 
+            JOIN membros m ON u.membro_id = m.id 
+            WHERE u.id = $1
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Usuário não encontrado'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('Erro ao buscar usuário:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Erro interno do servidor'
+        });
+    }
+});
+
 // POST /api/auth/users - Criar usuário (apenas admin)
-router.post('/users', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/users', authenticateToken, requireAdminOnly, async (req, res) => {
     try {
         const { membro_id, username, password, role } = req.body;
 
@@ -244,17 +289,35 @@ router.post('/users', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // PUT /api/auth/users/:id - Atualizar usuário (apenas admin)
-router.put('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/users/:id', authenticateToken, requireAdminOnly, async (req, res) => {
     try {
         const { id } = req.params;
-        const { username, role, ativo } = req.body;
+        const { membro_id, username, password, role, ativo } = req.body;
 
-        const result = await query(`
-            UPDATE usuarios 
-            SET username = $1, role = $2, ativo = $3, data_atualizacao = CURRENT_TIMESTAMP
-            WHERE id = $4
-            RETURNING id, username, role, ativo
-        `, [username, role, ativo, id]);
+        let queryText, queryParams;
+
+        if (password && password.trim() !== '') {
+            // Atualizar com nova senha
+            const passwordHash = await bcrypt.hash(password, 10);
+            queryText = `
+                UPDATE usuarios 
+                SET membro_id = $1, username = $2, password_hash = $3, role = $4, ativo = $5, data_atualizacao = CURRENT_TIMESTAMP
+                WHERE id = $6
+                RETURNING id, username, role, ativo
+            `;
+            queryParams = [membro_id, username, passwordHash, role, ativo, id];
+        } else {
+            // Atualizar sem alterar senha
+            queryText = `
+                UPDATE usuarios 
+                SET membro_id = $1, username = $2, role = $3, ativo = $4, data_atualizacao = CURRENT_TIMESTAMP
+                WHERE id = $5
+                RETURNING id, username, role, ativo
+            `;
+            queryParams = [membro_id, username, role, ativo, id];
+        }
+
+        const result = await query(queryText, queryParams);
 
         if (result.rows.length === 0) {
             return res.status(404).json({
@@ -279,7 +342,7 @@ router.put('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // DELETE /api/auth/users/:id - Deletar usuário (apenas admin)
-router.delete('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.delete('/users/:id', authenticateToken, requireAdminOnly, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -306,4 +369,4 @@ router.delete('/users/:id', authenticateToken, requireAdmin, async (req, res) =>
     }
 });
 
-module.exports = { router, authenticateToken, requireAdmin };
+module.exports = { router, authenticateToken, requireAdmin, requireAdminOnly };
