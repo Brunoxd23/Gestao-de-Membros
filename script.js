@@ -104,10 +104,16 @@ class IgrejaManagerAPI {
             });
 
             form.reset();
-            // Recarregar página com spinner (notificação será mostrada pela função)
-            this.recarregarPaginaComSpinner('Cadastrando...', 'Atualizando lista de membros', true, 'Membro Cadastrado!', 'Novo membro adicionado com sucesso à igreja!', true);
+            // Fechar modal de cadastro
+            const modal = document.getElementById('modalCadastro');
+            if (modal) {
+                modal.classList.remove('show');
+                document.body.classList.remove('modal-open');
+            }
+            // Mostrar notificação e recarregar
+            this.recarregarPaginaComSpinner('Cadastrando...', 'Atualizando lista de membros', true, '✓ Membro Cadastrado!', 'Novo membro adicionado com sucesso à igreja!', true);
         } catch (error) {
-            this.mostrarMensagem(error.message || 'Erro ao cadastrar membro', 'error');
+            this.mostrarNotificacao('Erro ao Cadastrar', error.message || 'Não foi possível cadastrar o membro', 'error', 4000);
         }
     }
 
@@ -408,13 +414,13 @@ class IgrejaManagerAPI {
 
             if (data.success) {
                 // Recarregar página com spinner (notificação será mostrada pela função)
-                this.recarregarPaginaComSpinner('Removendo...', 'Atualizando lista de membros', true, 'Membro Removido!', 'Membro foi removido do sistema com sucesso!', true);
+                this.recarregarPaginaComSpinner('Removendo...', 'Atualizando lista de membros', true, '✓ Membro Removido!', 'O membro foi removido do sistema com sucesso!', true);
             } else {
-                this.mostrarMensagem(data.error || 'Erro ao excluir membro', 'error');
+                this.mostrarNotificacao('Erro ao Excluir', data.error || 'Não foi possível excluir o membro', 'error', 4000);
             }
         } catch (error) {
             console.error('Erro ao excluir membro:', error);
-            this.mostrarMensagem('Erro ao excluir membro', 'error');
+            this.mostrarNotificacao('Erro de Conexão', 'Não foi possível conectar ao servidor', 'error', 4000);
         }
     }
 
@@ -1106,15 +1112,16 @@ Comunidade Evangélica Príncipe da Paz - CEPPEMBU
             console.log('📊 Dados recebidos da API:', data);
             if (data.success) {
                 document.querySelectorAll('.modal').forEach(modal => modal.remove());
+                document.body.classList.remove('modal-open');
                 // Recarregar página com spinner (notificação será mostrada pela função)
-                this.recarregarPaginaComSpinner('Atualizando...', 'Recarregando lista de membros', true, 'Membro Atualizado!', 'Informações do membro foram atualizadas com sucesso!', true);
+                this.recarregarPaginaComSpinner('Atualizando...', 'Recarregando lista de membros', true, '✓ Membro Atualizado!', 'As alterações foram salvas com sucesso!', true);
             } else {
-                this.mostrarMensagem(data.error || 'Erro ao atualizar membro', 'error');
+                this.mostrarNotificacao('Erro ao Atualizar', data.error || 'Não foi possível atualizar o membro', 'error', 4000);
             }
         })
         .catch(error => {
             console.error('Erro ao atualizar membro:', error);
-            this.mostrarMensagem('Erro ao atualizar membro', 'error');
+            this.mostrarNotificacao('Erro de Conexão', 'Não foi possível conectar ao servidor', 'error', 4000);
         });
     }
 
@@ -1260,10 +1267,10 @@ Comunidade Evangélica Príncipe da Paz
         
         // Definir ícones para cada tipo
         const icons = {
-            success: 'fas fa-check',
-            error: 'fas fa-times',
+            success: 'fas fa-check-circle',
+            error: 'fas fa-exclamation-circle',
             warning: 'fas fa-exclamation-triangle',
-            info: 'fas fa-info'
+            info: 'fas fa-info-circle'
         };
 
         // Criar HTML da notificação
@@ -1273,12 +1280,14 @@ Comunidade Evangélica Príncipe da Paz
             </div>
             <div class="notification-content">
                 <div class="notification-title">${titulo}</div>
-                <div class="notification-message">${mensagem}</div>
+                ${mensagem ? `<div class="notification-message">${mensagem}</div>` : ''}
             </div>
             <button class="notification-close" onclick="this.parentElement.remove()">
                 <i class="fas fa-times"></i>
             </button>
-            <div class="notification-progress" style="width: 100%;"></div>
+            <div class="notification-progress">
+                <div class="notification-progress-bar" style="width: 100%;"></div>
+            </div>
         `;
 
         // Adicionar ao container
@@ -1290,9 +1299,13 @@ Comunidade Evangélica Príncipe da Paz
         });
 
         // Iniciar barra de progresso
-        const progressBar = notification.querySelector('.notification-progress');
-        progressBar.style.transition = `width ${duracao}ms linear`;
-        progressBar.style.width = '0%';
+        const progressBar = notification.querySelector('.notification-progress-bar');
+        if (progressBar) {
+            progressBar.style.transition = `width ${duracao}ms linear`;
+            requestAnimationFrame(() => {
+                progressBar.style.width = '0%';
+            });
+        }
 
         // Auto-remover após duração
         setTimeout(() => {
@@ -1706,7 +1719,7 @@ function setupAuthEventListeners() {
     if (formCadastroUsuario) {
         formCadastroUsuario.addEventListener('submit', async (e) => {
             e.preventDefault();
-            await cadastrarUsuario();
+            await cadastrarUsuario(e);
         });
     }
     
@@ -1723,7 +1736,7 @@ function setupAuthEventListeners() {
     if (formEditarUsuario) {
         formEditarUsuario.addEventListener('submit', async (e) => {
             e.preventDefault();
-            await editarUsuario();
+            await editarUsuario(e);
         });
     }
 }
@@ -1762,7 +1775,9 @@ async function carregarMembrosParaCadastro() {
 }
 
 // Função para cadastrar usuário
-async function cadastrarUsuario() {
+async function cadastrarUsuario(e) {
+    if (e) e.preventDefault();
+    
     const form = document.getElementById('formCadastroUsuario');
     const formData = new FormData(form);
     
@@ -1775,12 +1790,12 @@ async function cadastrarUsuario() {
     
     // Validações
     if (!dados.membro_id || !dados.username || !dados.password || !dados.role) {
-        mostrarNotificacao('Todos os campos são obrigatórios', 'error');
+        igreja.mostrarNotificacao('Campos Obrigatórios', 'Por favor, preencha todos os campos', 'warning', 4000);
         return;
     }
     
     if (dados.password.length < 6) {
-        mostrarNotificacao('A senha deve ter pelo menos 6 caracteres', 'error');
+        igreja.mostrarNotificacao('Senha Inválida', 'A senha deve ter pelo menos 6 caracteres', 'warning', 4000);
         return;
     }
     
@@ -1801,19 +1816,22 @@ async function cadastrarUsuario() {
             // Fechar modal primeiro
             fecharModalCadastroUsuario();
             
-            // Mostrar notificação de sucesso
-            mostrarNotificacao('Usuário cadastrado com sucesso!', 'success');
+            // Limpar formulário
+            form.reset();
             
-            // Recarregar página após 2 segundos para mostrar a lista atualizada
+            // Mostrar notificação de sucesso elegante
+            igreja.mostrarNotificacao('✓ Usuário Cadastrado!', 'O usuário foi criado com sucesso', 'success', 4000);
+            
+            // Aguardar a notificação aparecer completamente antes de recarregar (2 segundos)
             setTimeout(() => {
-                window.location.reload();
+                carregarUsuarios();
             }, 2000);
         } else {
-            mostrarNotificacao(result.error || 'Erro ao cadastrar usuário', 'error');
+            igreja.mostrarNotificacao('Erro ao Cadastrar', result.error || 'Não foi possível cadastrar o usuário', 'error', 4000);
         }
     } catch (error) {
         console.error('Erro ao cadastrar usuário:', error);
-        mostrarNotificacao('Erro ao cadastrar usuário', 'error');
+        igreja.mostrarNotificacao('Erro de Conexão', 'Não foi possível conectar ao servidor', 'error', 4000);
     }
 }
 
@@ -1989,7 +2007,9 @@ async function carregarMembrosParaEdicao() {
 }
 
 // Função para editar usuário
-async function editarUsuario() {
+async function editarUsuario(e) {
+    if (e) e.preventDefault();
+    
     const form = document.getElementById('formEditarUsuario');
     const formData = new FormData(form);
     
@@ -2004,12 +2024,12 @@ async function editarUsuario() {
     
     // Validações
     if (!dados.membro_id || !dados.username || !dados.role) {
-        mostrarNotificacao('Todos os campos obrigatórios devem ser preenchidos', 'error');
+        igreja.mostrarNotificacao('Campos Obrigatórios', 'Por favor, preencha todos os campos obrigatórios', 'warning', 4000);
         return;
     }
     
     if (dados.password && dados.password.length < 6) {
-        mostrarNotificacao('A senha deve ter pelo menos 6 caracteres', 'error');
+        igreja.mostrarNotificacao('Senha Inválida', 'A senha deve ter pelo menos 6 caracteres', 'warning', 4000);
         return;
     }
     
@@ -2027,16 +2047,25 @@ async function editarUsuario() {
         const result = await response.json();
         
         if (result.success) {
-            mostrarNotificacao('Usuário atualizado com sucesso!', 'success');
-            form.reset();
+            // Fechar modal primeiro
             fecharModalEditarUsuario();
-            carregarUsuarios();
+            
+            // Limpar formulário
+            form.reset();
+            
+            // Mostrar notificação de sucesso
+            igreja.mostrarNotificacao('✓ Usuário Atualizado!', 'As alterações foram salvas com sucesso', 'success', 4000);
+            
+            // Aguardar a notificação aparecer completamente antes de recarregar (2 segundos)
+            setTimeout(() => {
+                carregarUsuarios();
+            }, 2000);
         } else {
-            mostrarNotificacao(result.error || 'Erro ao atualizar usuário', 'error');
+            igreja.mostrarNotificacao('Erro ao Atualizar', result.error || 'Não foi possível atualizar o usuário', 'error', 4000);
         }
     } catch (error) {
         console.error('Erro ao editar usuário:', error);
-        mostrarNotificacao('Erro ao editar usuário', 'error');
+        igreja.mostrarNotificacao('Erro de Conexão', 'Não foi possível conectar ao servidor', 'error', 4000);
     }
 }
 
@@ -2051,7 +2080,7 @@ function fecharModalEditarUsuario() {
 
 // Função para deletar usuário
 async function deletarUsuario(id) {
-    if (!confirm('Tem certeza que deseja excluir este usuário?')) {
+    if (!confirm('⚠️ Tem certeza que deseja excluir este usuário?\n\nEsta ação não pode ser desfeita.')) {
         return;
     }
     
@@ -2067,14 +2096,18 @@ async function deletarUsuario(id) {
         const result = await response.json();
         
         if (result.success) {
-            mostrarNotificacao('Usuário excluído com sucesso!', 'success');
-            carregarUsuarios();
+            igreja.mostrarNotificacao('✓ Usuário Excluído!', 'O usuário foi removido do sistema', 'success', 4000);
+            
+            // Aguardar a notificação aparecer completamente antes de recarregar (2 segundos)
+            setTimeout(() => {
+                carregarUsuarios();
+            }, 2000);
         } else {
-            mostrarNotificacao(result.error || 'Erro ao excluir usuário', 'error');
+            igreja.mostrarNotificacao('Erro ao Excluir', result.error || 'Não foi possível excluir o usuário', 'error', 4000);
         }
     } catch (error) {
         console.error('Erro ao deletar usuário:', error);
-        mostrarNotificacao('Erro ao deletar usuário', 'error');
+        igreja.mostrarNotificacao('Erro de Conexão', 'Não foi possível conectar ao servidor', 'error', 4000);
     }
 }
 

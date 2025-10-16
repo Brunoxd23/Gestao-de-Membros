@@ -62,23 +62,27 @@ class AuthManager {
                 this.showUserBar();
                 this.updateNavigation();
                 
-                // Mostrar notificação de sucesso
-                if (window.igreja) {
-                    window.igreja.mostrarNotificacao('Bem-vindo!', `Olá, ${this.currentUser.nome}!`, 'success');
-                }
+                // Mostrar notificação de sucesso após um pequeno delay
+                setTimeout(() => {
+                    if (window.igreja) {
+                        const roleText = this.currentUser.role === 'admin' ? 'Administrador' : 
+                                       this.currentUser.role === 'secretaria' ? 'Secretaria' : 'Membro';
+                        window.igreja.mostrarNotificacao('✓ Bem-vindo(a)!', `Olá, ${this.currentUser.nome} (${roleText})`, 'success', 4000);
+                    }
+                }, 300);
                 
                 return true;
             } else {
                 // Mostrar erro
                 if (window.igreja) {
-                    window.igreja.mostrarNotificacao('Erro no Login', result.error, 'error');
+                    window.igreja.mostrarNotificacao('Erro no Login', result.error || 'Usuário ou senha incorretos', 'error', 4000);
                 }
                 return false;
             }
         } catch (error) {
             console.error('Erro ao fazer login:', error);
             if (window.igreja) {
-                window.igreja.mostrarNotificacao('Erro', 'Erro de conexão. Tente novamente.', 'error');
+                window.igreja.mostrarNotificacao('Erro de Conexão', 'Não foi possível conectar ao servidor. Tente novamente.', 'error', 4000);
             }
             return false;
         }
@@ -113,9 +117,9 @@ class AuthManager {
             this.hideUserBar();
             this.updateNavigation();
             
-            // Mostrar notificação
+            // Mostrar notificação de logout
             if (window.igreja) {
-                window.igreja.mostrarNotificacao('Logout', 'Você foi desconectado com sucesso.', 'info');
+                window.igreja.mostrarNotificacao('✓ Logout Realizado', 'Você foi desconectado com sucesso. Até breve!', 'info', 3000);
             }
         }
     }
